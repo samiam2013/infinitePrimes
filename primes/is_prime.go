@@ -7,6 +7,7 @@ func IsPrime(candidate *big.Int) bool {
 		return false
 	}
 	sqrt := new(big.Int).Sqrt(candidate)
+	sqrt = sqrt.Add(sqrt, big.NewInt(1))
 	// if !candidate.ProbablyPrime(20) {
 	// 	return false
 	// }

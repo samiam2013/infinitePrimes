@@ -16,9 +16,9 @@ import (
 	}
 */
 // func GenCandidates() iter.Seq[*big.Int] bool) {
-func GenCandidates(start int64) func(yield func(v *big.Int) bool) {
+func GenCandidates(start *big.Int) func(yield func(v *big.Int) bool) {
 	return func(yield func(v *big.Int) bool) {
-		for i := big.NewInt(start); ; i.Add(i, big.NewInt(1)) {
+		for i := new(big.Int).Set(start); ; i.Add(i, big.NewInt(2)) {
 			if !yield(i) {
 				return
 			}
