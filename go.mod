@@ -1,3 +1,3 @@
 module github.com/samiam2013/infiniteprimes
 
-go 1.22.4
+go 1.23
