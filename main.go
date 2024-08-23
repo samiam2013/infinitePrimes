@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"math"
 	"math/big"
 	"time"
 
 	"github.com/samiam2013/infiniteprimes/primes"
+	"github.com/sirupsen/logrus"
 )
 
 type computation struct {
@@ -15,13 +14,11 @@ type computation struct {
 	timeTaken time.Duration
 }
 
-const mersennePower = 40
-
 func main() {
-	c := make(chan *computation, 1024)
+	c := make(chan *computation)
 	go recieve(c)
-	start := big.NewInt(int64(math.Pow(2, mersennePower) - 1))
-	fmt.Printf("starting at %s for mersenne number 2^%d-1\n", start.String(), mersennePower)
+	start := big.NewInt(1) // int64(math.Pow(2, mersennePower) - 2))
+	logrus.Infof("starting at %s", start.String())
 	for i := range primes.GenCandidates(start) {
 		// fmt.Println("testing candidate", i.String())
 		k := new(big.Int)
@@ -33,17 +30,17 @@ func main() {
 			c <- &computation{m, isPrime, dur}
 		}(k)
 	}
-
 }
 
+const avgLen = 100
+
 func recieve(c chan *computation) {
-	const avgLen = 10
 	latestDurs := make([]*time.Duration, 0)
 	for {
 		select {
 		case p := <-c:
 			if p.isPrime {
-				fmt.Printf("found prime %s in %.2fs ", p.candidate.String(), p.timeTaken.Seconds())
+				logrus.Infof("found prime %s in %.2fs ", p.candidate.String(), p.timeTaken.Seconds())
 				latestDurs = append(latestDurs, &p.timeTaken)
 				if len(latestDurs) > avgLen {
 					latestDurs = latestDurs[1:]
@@ -53,7 +50,7 @@ func recieve(c chan *computation) {
 					totalDur += *d
 				}
 				avgDur := totalDur / time.Duration(len(latestDurs))
-				fmt.Printf("\tavg for %d primes: %.2fs\n", avgLen, avgDur.Seconds())
+				logrus.Infof("avg for %d primes: %.2fs", len(latestDurs), avgDur.Seconds())
 			}
 		default:
 			time.Sleep(100 * time.Millisecond)
